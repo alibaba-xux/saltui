@@ -92,34 +92,34 @@ class DatetimeField extends React.Component {
     const t = this;
     const {
       className, value, placeholder, readOnly,
-      minDate, maxDate, disabledDate,
+      minDate, maxDate, disabledDate, disabledTime,
     } = t.props;
-    const DatetimeProps = {
+    const datetimeProps = {
       minDate,
       maxDate,
       disabledDate,
+      disabledTime,
     };
     const iconProps = {
       className: Context.prefixClass('datetime-field-icon'),
       name: 'angle-right',
       width: 26,
       height: 26,
-      onClick: t.handleClick.bind(t),
     };
 
     const shouldShowValue = (isObject(value) && value.value) || (!isObject(value) && value);
     return (
       <Field
         {...t.props}
-        icon={t.props.readOnly ? null : (
+        middleIcon={t.props.readOnly ? null : (
           <AngleRight {...iconProps} />
         )}
-        layout="h"
         className={classnames(Context.prefixClass('datetime-field'), {
           [className]: !!className,
         })}
+        onClick={t.handleClick.bind(t)}
       >
-        <div onClick={t.handleClick.bind(t)}>
+        <div>
           {
             shouldShowValue ? null : <div className={Context.prefixClass('omit datetime-field-placeholder')}>{placeholder}</div>
           }
@@ -140,13 +140,13 @@ class DatetimeField extends React.Component {
           title={t.props.label}
           locale={t.props.locale}
           columns={t.props.columns}
-          value={t.props.value}
+          value={t.props.value || t.props.defaultOpenValue}
           disabledDate={t.props.disabledDate}
           confirmText={t.props.confirmText}
           cancelText={t.props.cancelText}
           onCancel={t.props.onCancel.bind(t)}
           onConfirm={t.handleConfirm.bind(t)}
-          {...DatetimeProps}
+          {...datetimeProps}
         />
       </Field>
     );
@@ -175,6 +175,11 @@ DatetimeField.propTypes = {
   readOnly: PropTypes.bool,
   placeholder: PropTypes.string,
   onSelect: PropTypes.func,
+  defaultOpenValue: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string,
+    PropTypes.object,
+  ]),
 };
 
 DatetimeField.displayName = 'DatetimeField';

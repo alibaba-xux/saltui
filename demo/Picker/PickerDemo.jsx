@@ -81,10 +81,16 @@ class Demo extends React.Component {
           <Group.Head className="t-FS14 t-LH1_5 t-LH20 t-PT10 t-PB10 t-PL18">远程数据源</Group.Head>
           <Button onClick={() => { this.showPicker(1); }}>点击显示</Button>
           <Picker
+            className={'my-picker'}
             fetchUrl="https://www.easy-mock.com/mock/5a2f75a26ce8af6869ec49f0/saltui/picker-data?jsonp_param_name=callback"
             onConfirm={(value) => {
               alert(`value: ${JSON.stringify(value)}`);
               this.hidePicker(1);
+            }}
+            onVisibleChange={(visible) => {
+              if (!visible) {
+                this.hidePicker(1);
+              }
             }}
             visible={t.state.pickerVisible1}
           />
@@ -96,11 +102,36 @@ class Demo extends React.Component {
               alert(`value: ${JSON.stringify(value)}`);
               this.hidePicker(2);
             }}
+            onVisibleChange={(visible) => {
+              if (!visible) {
+                this.hidePicker(2);
+              }
+            }}
+            categories={[
+              { value: 'FIRST', text: '上半年' },
+              { value: 'NEXT', text: '下半年' },
+            ]}
+            // 一个 filter 用于哪些数据可以展示在当前分类下。
+            shouldShowInCategory={(cat, item) => {
+              // return true;
+              if (cat === 'FIRST') {
+                return item.value <= 5;
+              }
+              if (cat === 'NEXT') {
+                return item.value >= 6;
+              }
+              return false;
+            }}
+            // grouping
+            // groupingIndicator
             filterOption={false}
             onSearch={(keyword) => {
               this.setState({ data: keyword ? monthArray.slice(4) : monthArray });
             }}
             visible={t.state.pickerVisible2}
+            customRender={
+              <div data-value="自定义值" data-text="自定义文本">自定义内容</div>
+            }
           />
         </Group>
       </div>

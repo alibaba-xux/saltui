@@ -55,6 +55,7 @@ class SearchBar extends React.Component {
     }
   }
 
+
   onChange(e) {
     const { value } = e.target;
     const t = this;
@@ -78,6 +79,10 @@ class SearchBar extends React.Component {
       }
       this.input.blur();
     }
+  }
+
+  getKeyword() {
+    return this.state.keyword;
   }
 
   doSearch(from, keyword) {
@@ -119,6 +124,7 @@ class SearchBar extends React.Component {
       isActive: false,
       keyword: '',
     }, () => {
+      t.props.onChange('', 'exit', null);
       t.props.onExit();
     });
   }
@@ -165,7 +171,7 @@ class SearchBar extends React.Component {
                 </span>
               </div>
             </div>
-            <form action="javascript:;">
+            <form action="javascript:void(0);">
               <input
                 ref={(c) => { t.input = c; }}
                 type="search"

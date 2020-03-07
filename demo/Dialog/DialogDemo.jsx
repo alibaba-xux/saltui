@@ -40,6 +40,7 @@ class Demo extends React.Component {
       },
     });
   }
+  
 
   handleTitle() {
     Dialog.alert({
@@ -53,7 +54,11 @@ class Demo extends React.Component {
   handleMultiLines() {
     Dialog.alert({
       title: '提示',
-      content: '同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！',
+      content: (
+        <div style={{ maxHeight: 200, overflow: 'auto' }}>
+          '同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！同学，你赢了！'
+        </div>
+      ),
       onConfirm() {
         console.log('multi lines confirm');
       },

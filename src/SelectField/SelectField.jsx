@@ -13,7 +13,6 @@ import AngleRight from 'salt-icon/lib/AngleRight';
 import Context from '../Context';
 import Slot from '../Slot';
 import Field from '../Field';
-import { shouldUpdate } from '../Utils';
 import isEqual from 'lodash/isEqual';
 
 const isNil = value => (value === null || value === undefined);
@@ -75,24 +74,28 @@ class SelectField extends React.Component {
 
   render() {
     const t = this;
-    const icon = !t.props.readOnly ? (
+    const middleIcon = !t.props.readOnly ? (
       <AngleRight
         className={Context.prefixClass('select-field-icon')}
         width={26}
         height={26}
-        onClick={t.handleClick.bind(t)}
       />
     ) : null;
     return (
       <Field
         {...t.props}
-        icon={icon}
+        middleIcon={middleIcon}
         className={classnames(Context.prefixClass('select-field'), {
           [t.props.className]: !!t.props.className,
         })}
+        onClick={t.handleClick.bind(t)}
       >
-        <div onClick={t.handleClick.bind(t)} className={Context.prefixClass('select-field-content')}>
-          {!t.state.confirmedValue[0] ? <div className={Context.prefixClass('omit select-field-placeholder')}>{t.props.placeholder}</div> : null}
+        <div className={Context.prefixClass('select-field-content')}>
+          {
+            !t.state.confirmedValue[0]
+            ? <div className={Context.prefixClass('omit select-field-placeholder')}>{t.props.placeholder}</div>
+            : null
+          }
           {t.state.confirmedValue[0] ? (
             <div className={Context.prefixClass('select-field-value FBH FBAC')}>
               <span
@@ -103,7 +106,7 @@ class SelectField extends React.Component {
               </span>
             </div>
           ) : null}
-          {t.renderIcon(icon)}
+          {/*{t.renderIcon(middleIcon)}*/}
         </div>
         <Slot
           ref={(c) => { this.slot = c; }}

@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import RcDialog from 'rc-dialog';
 import IconToastError from 'salt-icon/lib/ToastError';
 import Context from '../Context';
-import { stopBodyScrolling, getLocale } from '../Utils';
+import { stopBodyScroll, getLocale } from '../Utils';
 import i18nData from './i18n';
 
 const { prefixClass } = Context;
@@ -46,11 +46,13 @@ class Dialog extends React.Component {
       show: props.show,
       prevShow: props.show,
     };
+    this.getContentDom = this.getContentDom.bind(this);
   }
+
 
   componentDidMount() {
     if (this.state.show === true) {
-      stopBodyScrolling(true);
+      this.bodyScroll = stopBodyScroll(this.getContentDom);
     }
   }
 
@@ -66,15 +68,23 @@ class Dialog extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.show === false && this.state.show === true) {
-      stopBodyScrolling(true);
-    } else if (prevState.show === true && this.state.show === false) {
-      stopBodyScrolling(false);
+      this.bodyScroll = stopBodyScroll(this.getContentDom);
+    } else if (prevState.show === true && this.state.show === false && this.bodyScroll) {
+      this.bodyScroll.enable();
+      this.bodyScroll = null;
     }
   }
 
 
   componentWillUnmount() {
-    stopBodyScrolling(false);
+    if (this.bodyScroll) {
+      this.bodyScroll.enable();
+      this.bodyScroll = null;
+    }
+  }
+
+  getContentDom() {
+    return this.content;
   }
 
   getButtons() {
@@ -240,7 +250,12 @@ class Dialog extends React.Component {
         transitionName={prefixClass('dialog-slideDown')}
         maskTransitionName={prefixClass('dialog-fade')}
       >
-        {displayContent}
+        <div ref={(c) => {
+          this.content = c;
+        }}
+        >
+          {displayContent}
+        </div>
       </RcDialog>
     );
   }
@@ -291,35 +306,76 @@ Dialog.propTypes = {
   className: PropTypes.string, // 弹窗内容 CSS 类名
 };
 
-// 全局 Dialog 组件 render 的 DOM ID
-const doc = document;
-let wrapper = null;
+let uid = 0;
+
+const getUid = () => {
+  uid += 1;
+  return `dialog${uid}`;
+};
+
+
+// 用来收集全局实例 close，方便 Dialog.hide 销毁
+const dialogMap = {};
 
 /**
  * Dialog.confirm/Dialog.alert 依赖的方法，插入 DOM 节点，并在这个 DOM 节点上实例化 Dialog 组件
  * @param {object} options 弹窗相关参数
  */
+
 const show = function show(options = {}) {
-  wrapper = doc.createElement('div');
-  doc.body.appendChild(wrapper);
-  ReactDOM.render(<Dialog {...options} show />, wrapper);
+  const wrapper = document.createElement('div');
+  document.body.appendChild(wrapper);
+
+  const newOptions = { ...options };
+  const dialogId = getUid();
+
+  const close = () => {
+    if (document.body.contains(wrapper)) {
+      ReactDOM.unmountComponentAtNode(wrapper);
+      document.body.removeChild(wrapper);
+    }
+    delete dialogMap[dialogId];
+  };
+
+  const getCloseFunc = func => () => {
+    close();
+    if (typeof func === 'function') {
+      func();
+    }
+    return false;
+  };
+
+
+  dialogMap[dialogId] = close;
+
+  if (newOptions.type === 'alert') {
+    newOptions.buttons = [{
+      content: newOptions.confirmText || 'ok',
+      callback: getCloseFunc(newOptions.onConfirm),
+      primary: true,
+    }];
+  } else if (newOptions.type === 'confirm') {
+    newOptions.buttons = [{
+      content: newOptions.cancelText || 'cancel',
+      callback: getCloseFunc(newOptions.onCancel),
+    }, {
+      content: newOptions.confirmText || 'ok',
+      callback: getCloseFunc(newOptions.onConfirm),
+      primary: true,
+    }];
+  }
+
+  ReactDOM.render(<Dialog {...newOptions} show />, wrapper);
 };
 
 /**
  * 隐藏通过 alert/confirm 展示出来的弹窗实例
  */
 Dialog.hide = function hide() {
-  if (document.body.contains(wrapper)) {
-    ReactDOM.unmountComponentAtNode(wrapper);
-    document.body.removeChild(wrapper);
-  }
-};
-
-const getCloseFunc = func => () => {
-  Dialog.hide();
-  if (typeof func === 'function') {
-    func();
-  }
+  Object.keys(dialogMap).forEach((dialogId) => {
+    const close = dialogMap[dialogId];
+    close();
+  });
 };
 
 /**
@@ -327,12 +383,7 @@ const getCloseFunc = func => () => {
  * @param { object } options alert 相关参数
  */
 Dialog.alert = function alert(options) {
-  const alertOptions = { ...options };
-  alertOptions.buttons = [{
-    content: alertOptions.confirmText || 'ok',
-    callback: getCloseFunc(alertOptions.onConfirm),
-    primary: true,
-  }];
+  const alertOptions = { ...options, type: 'alert' };
   show(alertOptions);
 };
 
@@ -341,31 +392,10 @@ Dialog.alert = function alert(options) {
  * @param { object } options confirm 相关参数
  */
 Dialog.confirm = function confirm(options) {
-  const confirmOptions = { ...options };
-  confirmOptions.buttons = [{
-    content: confirmOptions.cancelText || 'cancel',
-    callback: getCloseFunc(confirmOptions.onCancel),
-  }, {
-    content: confirmOptions.confirmText || 'ok',
-    callback: getCloseFunc(confirmOptions.onConfirm),
-    primary: true,
-  }];
+  const confirmOptions = { ...options, type: 'confirm' };
   show(confirmOptions);
 };
 
-/**
- * 比 alert 和 confirm 更灵活的全局 dialog 方法
- */
-Dialog.custom = function custom(options) {
-  const customOptions = { ...options };
-  if (options.buttons) {
-    return show(customOptions);
-  }
-  if (options.type && options.type === TYPES[1]) {
-    return Dialog.confirm(customOptions);
-  }
-  return Dialog.alert(customOptions);
-};
 
 // 留了一个 rcDialog 引用
 Dialog.rcDialog = RcDialog;

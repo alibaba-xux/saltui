@@ -68,19 +68,30 @@ class Demo extends React.Component {
           slotText: '李伟（孟则）',
         },
         {
-          checked: true,
+          checked: false,
           text: '刘艳芬',
           disable: true,
           value: '3',
         },
         {
           checked: false,
-          text: '邓丽娲',
+          text: '邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲邓丽娲',
           disable: false,
           value: '4',
         },
       ],
     };
+    setTimeout(() => {
+      const data = [...this.state.data].map((item,index) => {
+        if (index === 0) {
+          item.checked = true
+        }
+        return item
+      })
+      this.setState({
+        data
+      })
+    }, 4000)
   }
 
   getCheckboxFieldProps() {
@@ -127,7 +138,8 @@ class Demo extends React.Component {
             <CheckboxField
               {...checkboxFieldProps}
               mode="slot"
-              label="多选（slot）"
+              layout={'v'}
+              label="多选（slot)"
               required={false}
             />
           </Group.List>
@@ -136,8 +148,17 @@ class Demo extends React.Component {
               {...checkboxFieldProps}
               mode="slot"
               label="禁用"
+              layout={'h'}
               required={false}
               disabled
+            />
+            <CheckboxField
+              {...checkboxFieldProps}
+              mode="slot"
+              label="只读"
+              layout={'v'}
+              required={false}
+              readOnly
             />
           </Group.List>
         </Group>

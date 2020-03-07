@@ -40,12 +40,14 @@ class Demo extends React.Component {
       //   startDate: null,
       //   endDate: null,
       // },
+      visible: false,
     };
   }
 
   onOk(value) {
     console.log(value);
     this.setState({
+      visible: false,
       value,
     });
   }
@@ -59,7 +61,7 @@ class Demo extends React.Component {
       // multiLine: true,
       // readOnly: true,
       layout: 'h',
-      type: 'dayWithTime',
+      // type: 'dayWithTime',
       singleMode: true,
       // formatter: 'yyyy-MM-dd',
       showWeek: true,
@@ -71,16 +73,24 @@ class Demo extends React.Component {
       animationType: 'slideLeft',
       // animationType: 'slideUp',
       onOk: this.onOk.bind(this),
+      visible: this.state.visible,
+      onOpen: () => {
+        this.setState({
+          visible: true,
+        });
+      },
+      onCancel: () => {
+        this.setState({
+          visible: false,
+        });
+      },
     };
     return (
-      <Group>
-        <Group.Head className="t-FS14 t-LH1_5 t-LH20 t-PT10 t-PB10 t-PL18">基本演示</Group.Head>
-        <Group.List>
-          <CalendarField {...props} />
-          <CalendarField {...props} label="查看态" readOnly />
-          <CalendarField {...props} label="禁用" disabled />
-        </Group.List>
-      </Group>
+      <div>
+        <CalendarField {...props} />
+        {/* <CalendarField {...props} label="查看态" readOnly />
+        <CalendarField {...props} label="禁用" disabled /> */}
+      </div>
     );
   }
 }

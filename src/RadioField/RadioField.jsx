@@ -15,21 +15,29 @@ import { prefixClass } from '../Context';
 import Group from '../Group';
 import Popup from '../Popup';
 import Field from '../Field';
+import RadioNormal from './RadioNormal';
+import RadioNormalDisabled from './RadioNormalDisabled';
+import RadioSelected from './RadioSelected';
+import RadioSelectedDisabled from './RadioSelectedDisabled';
 
-const renderIcon = (checked, position) => (
-  <div className={classnames(prefixClass('radio-field-icon-wrapper FBAC FBH'), {
-    [position]: !!position,
-  })}
-  >
-    <OptionCheckedIcon
-      width={16}
-      height={16}
-      className={classnames(prefixClass('radio-field-icon'), {
-        'un-checked': !checked,
-      })}
-    />
-  </div>
-);
+const renderIcon = (checked, disabled, position) => {
+  let RenderedIcon = null;
+  if (checked) {
+    RenderedIcon = disabled ? RadioSelectedDisabled : RadioSelected;
+  } else {
+    RenderedIcon = disabled ? RadioNormalDisabled : RadioNormal;
+  }
+  return (
+    <div className={classnames(prefixClass('radio-field-icon-wrapper FBAC FBH'), {
+      [position]: !!position,
+    })}
+    >
+      <RenderedIcon
+        className={classnames(prefixClass('radio-field-icon'))}
+      />
+    </div>
+  );
+};
 class RadioField extends React.Component {
   constructor(props) {
     super(props);
@@ -41,10 +49,9 @@ class RadioField extends React.Component {
   /* eslint-disable no-param-reassign */
   clickAction(value, item, index, data) {
     const t = this;
-    const { data: radioArray, onChange } = t.props;
-
+    const { data: radioArray, onChange, readOnly } = t.props;
     const { disable } = item;
-    if (disable) {
+    if (disable || readOnly) {
       return;
     }
     radioArray.map((radioItem) => {
@@ -73,12 +80,11 @@ class RadioField extends React.Component {
 
   renderField() {
     const t = this;
-    const icon = !t.props.readOnly ? (
+    const middleIcon = !t.props.readOnly ? (
       <AngleRight
         className={prefixClass('radio-field-arrow-icon')}
         width={26}
         height={26}
-        onClick={t.showPopup.bind(t)}
       />
     ) : null;
     let currentValue;
@@ -92,13 +98,13 @@ class RadioField extends React.Component {
     return (
       <Field
         {...t.props}
-        layout="h"
-        icon={icon}
+        middleIcon={middleIcon}
         className={classnames(prefixClass('radio-field'), {
           [t.props.className]: !!t.props.className,
         })}
+        onClick={t.showPopup.bind(t)}
       >
-        <div onClick={t.showPopup.bind(t)}>
+        <div>
           {!currentValue ? <div className={prefixClass('omit radio-field-placeholder')}>{t.props.placeholder}</div> : ''}
           <div className={prefixClass('radio-field-value FBH FBAC')}>
             <span
@@ -131,6 +137,7 @@ class RadioField extends React.Component {
       groupListFlag,
       label,
       mode,
+      tip,
     } = t.props;
 
     const radioArrayComponent = radioArray.map((item, index, data) => {
@@ -145,7 +152,7 @@ class RadioField extends React.Component {
           onClick={t.clickAction.bind(t, value, item, index, data)}
         >
           {
-            t.props.iconPosition === 'left' && renderIcon(checked)
+            t.props.iconPosition === 'left' && renderIcon(checked, disable)
           }
           <div
             ref={`content${index}`}
@@ -154,7 +161,7 @@ class RadioField extends React.Component {
             {item.content || item.text}
           </div>
           {
-            t.props.iconPosition === 'right' && renderIcon(checked, 'right')
+            t.props.iconPosition === 'right' && renderIcon(checked, disable, 'right')
           }
           {
             disable && <div className={prefixClass('radio-field-disable-mask')} />
@@ -175,6 +182,7 @@ class RadioField extends React.Component {
     this.finalJSX = (
       <Group className={classnames(prefixClass('radio-field'), {
         [rootClassName]: !!rootClassName,
+        'is-group': true,
       }, {
           [className]: !!className,
         })}
@@ -192,6 +200,10 @@ class RadioField extends React.Component {
         <Group.List {...groupListArgument}>
           {radioArrayComponent}
         </Group.List>
+        {tip ?
+          <div className="t-field-box t-FBH t-field-tip-box">
+            <div className="t-FBH t-FBAC t-LH1_5 t-field-tip" style={{ borderTop: 'none' }}>{tip}</div>
+          </div> : null}
       </Group>
     );
 

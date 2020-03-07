@@ -33,20 +33,26 @@ class Field extends React.Component {
     );
   }
 
-  renderIcon() {
-    const t = this;
-    if (t.props.icon) {
-      let icon = null;
-      if (typeof t.props.icon.type === 'function') {
-        ({ icon } = t.props);
-      } else if (t.props.icon.name) {
-        icon = <Icon {...t.props.icon} />;
+  renderIcon(isMiddleIcon) {
+    let icon = this.props[isMiddleIcon ? 'middleIcon' : 'icon'];
+    if (icon) {
+      if (icon.name) {
+        icon = <Icon {...icon} />;
       }
-      if (icon) {
-        return icon;
-      }
+      return icon;
     }
     return null;
+  }
+
+  renderMiddleIcon() {
+    return (
+      <div className={classnames(prefixClass('field-pos-icon'), {
+        [prefixClass('FBH FBAC')]: true
+      })}>
+        {this.renderErrMsg()}
+        {this.renderIcon(true)}
+      </div>
+    )
   }
 
   renderTip() {
@@ -76,9 +82,12 @@ class Field extends React.Component {
 
   renderLabel(options = {}) {
     const t = this;
+    const { errMsg, showErrInTip } = this.props
+    const hasError = errMsg && showErrInTip && t.props.layout === 'v';
     if (t.props.label || t.props.labelRight) {
       return (
         <Label
+          className={hasError ? prefixClass('field-label-error') : ''}
           label={t.props.label}
           required={t.props.required}
           layout={t.props.layout}
@@ -90,7 +99,7 @@ class Field extends React.Component {
     return null;
   }
 
-  renderContent() {
+  renderContent(needMiddleIcon) {
     const t = this;
     const {
       children, extra, icon, errMsg, layout, tappable, multiLine, showErrInTip, disabled,
@@ -118,7 +127,7 @@ class Field extends React.Component {
         {extra}
         {(icon || (errMsg && !showErrInTip)) ?
           <div className={prefixClass('FBH FBAC field-icon')}>
-            {this.renderErrMsg()}
+            {!needMiddleIcon ? this.renderErrMsg() : null}
             {this.renderIcon()}
           </div> : null}
       </div>
@@ -127,18 +136,25 @@ class Field extends React.Component {
 
   render() {
     const t = this;
+    const {middleIcon, layout} = t.props;
     return (
       <div
         className={classnames(prefixClass('field'), {
           [prefixClass('field-disabled')]: t.props.disabled,
           [t.props.className]: !!t.props.className,
+          [prefixClass('FBH FBAC')]: middleIcon
         })}
+        onClick={(e) => {this.props.onClick(e)}}
       >
-        {
-          t.props.layout === 'v' ? t.renderLabel() : null
-        }
-        {this.renderContent()}
-        {this.renderTip()}
+        <div className={classnames({
+          [prefixClass('field-pos-box')]: middleIcon,
+          [prefixClass('FB1 PR')]: middleIcon
+        })}>
+          {layout === 'v' ? t.renderLabel() : null}
+          {t.renderContent(!!middleIcon)}
+          {t.renderTip()}
+        </div>
+        {middleIcon ? t.renderMiddleIcon() : null}
       </div>
     );
   }
@@ -154,16 +170,21 @@ Field.defaultProps = {
   layout: 'h',
   tip: '',
   icon: undefined,
+  iconMiddle: false,
+  middleIcon: undefined,
   extra: undefined,
   toastComponent: undefined,
   errMsg: undefined,
   showErrInTip: true,
+  onClick: () => {}
 };
 
 // http://facebook.github.io/react/docs/reusable-components.html
 Field.propTypes = {
   label: PropTypes.string,
   icon: PropTypes.object,
+  iconMiddle: PropTypes.bool,
+  middleIcon: PropTypes.object,
   required: PropTypes.bool,
   tappable: PropTypes.bool,
   readOnly: PropTypes.bool,
@@ -181,6 +202,7 @@ Field.propTypes = {
   toastComponent: PropTypes.func,
   errMsg: PropTypes.string,
   showErrInTip: PropTypes.bool,
+  onClick: PropTypes.func
 };
 
 Field.getFieldProps = (props = {}) => {

@@ -19,6 +19,7 @@ import ScrollView from '../ScrollView';
 import BottomTip from './BottomTip';
 import EmptyContent from './EmptyContent';
 import Item from './Item';
+import TagList from './TagList';
 
 function odd(i) {
   return !!((i + 1) % 2);
@@ -30,6 +31,7 @@ class ScrollList extends React.Component {
   static propTypes = {
     prefixCls: PropTypes.string,
     className: PropTypes.string,
+    listBorderType: PropTypes.string,
     children: PropTypes.any,
     scrollLoad: PropTypes.bool,
     scrollRefresh: PropTypes.bool,
@@ -90,6 +92,7 @@ class ScrollList extends React.Component {
     noDataImage: 'https://img.alicdn.com/tps/TB1K6mHNpXXXXXiXpXXXXXXXXXX-1000-1000.svg',
     fetchDataOnOpen: true,
     className: undefined,
+    listBorderType: 'scroll-list-no-border', // scroll-list-no-border, scroll-list-cut-border, scroll-list-full-border
     children: undefined,
     url: undefined,
     pageSize: undefined,
@@ -383,6 +386,7 @@ class ScrollList extends React.Component {
         }}
         className={classnames(this.props.prefixCls, {
           [this.props.className]: !!this.props.className,
+          [this.props.listBorderType]: !!this.props.listBorderType,
         })}
         {...this.refreshOptions()}
         {...this.infiniteScrollOptions()}
@@ -396,6 +400,7 @@ class ScrollList extends React.Component {
 }
 
 ScrollList.Item = Item;
+ScrollList.TagList = TagList;
 
 polyfill(ScrollList);
 
